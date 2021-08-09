@@ -1,17 +1,28 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchTime, fetchSymbols } from "./exhangerAPI";
+import { act } from "react-dom/test-utils";
+import { fetchSymbols, fetchLatestRates } from "./exhangerAPI";
 require('dotenv').config()
 const initialState = {
     exchangeFrom: "",
     exchangeTo: "",
     rate: 75,
-    base: "RUB",
+    base: "USD",
+    target: "RUB",
     statusSymbols: "idle",
-    symbols: {}
+    symbols: {},
+    statusRates: "idle",
+    rates: {}
+    
 }
 
 
-export const setBaseAsync = createAsyncThunk();
+export const setBaseAsync = createAsyncThunk(
+    "exchanger/setBase",
+    async (base) => {
+        const response = await fetchLatestRates(base);
+        return response;
+    }
+);
 
 export const fetchSymbolsAsync = createAsyncThunk(
     "exchanger/fetchSymbols",
@@ -27,17 +38,26 @@ export const exchangerSlice = createSlice({
     reducers: {
         setExchangeFrom: (state, action) => {
             state.exchangeFrom = action.payload;
-            state.exchangeTo = +action.payload * state.rate;
+            state.exchangeTo = +action.payload * 1;
         },
         setExchangeTo: (state, action) => {
-            state.exchangeFrom = +action.payload / state.rate;
+            
+            state.exchangeFrom = +action.payload / 1;
             state.exchangeTo = action.payload;
+        },
+        setTarget: (state,action)=>{
+            state.target = action.payload;
         }
     },
     extraReducers: (builder) => {
         builder.addCase(fetchSymbolsAsync.fulfilled, (state,action)=>{
             state.statusSymbols = "succeeded";
             state.symbols = action.payload;
+        });
+        builder.addCase(setBaseAsync.fulfilled ,(state,action)=>{
+            state.statusRates = "succeeded";
+            state.rates = action.payload.rates;
+            state.base = action.payload.base;
         })
     }
 })
@@ -45,5 +65,5 @@ export const exchangerSlice = createSlice({
 
 export const selectExchangeFrom = (state) => state.exchanger.exchangeFrom;
 export const selectExchangeTo = (state) => state.exchanger.exchangeTo;
-export const { setExchangeFrom, setExchangeTo } = exchangerSlice.actions;
+export const { setExchangeFrom, setExchangeTo, setTarget} = exchangerSlice.actions;
 export default exchangerSlice.reducer;

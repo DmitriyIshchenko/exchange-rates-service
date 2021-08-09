@@ -5,9 +5,9 @@ import {
     selectExchangeTo,
     setExchangeFrom,
     setExchangeTo,
-    fetchTimeAsync,
     fetchSymbolsAsync,
-    setBaseAsync
+    setBaseAsync,
+    setTarget
 } from "./exchangerSlice"
 
 
@@ -17,11 +17,14 @@ export function Exchanger() {
     const exchangeTo = useSelector(selectExchangeTo);
     const symbols = useSelector((state) => state.exchanger.symbols);
     const statusSymbols = useSelector((state) => state.exchanger.statusSymbols);
+    const statusRates = useSelector((state)=>state.exchanger.statusRates);
     const base = useSelector((state) => state.exchanger.base);
+    const target = useSelector((state)=>state.exchanger.target);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (statusSymbols === "idle") dispatch(fetchSymbolsAsync())
+        if (statusSymbols === "idle") dispatch(fetchSymbolsAsync());
+        if (statusRates==="idle") dispatch(setBaseAsync(base));
     })
 
     return (
@@ -31,14 +34,19 @@ export function Exchanger() {
             <br />
             <select onChange={(e) => dispatch(setBaseAsync(e.target.value))}>
                 {Object.keys(symbols).map(item => {
-                    const text = `${item} - ${symbols[item]}`
+                    const text = `${item} - ${symbols[item].description}`
                     return item === base ?
                         <option value={item} selected="selected">{text}</option>
                         : <option value={item}>{text}</option>
                 })}
             </select>
-            <select>
-                {Object.keys(symbols).map(item => <option>{item + " - " + symbols[item]}</option>)}
+            <select onChange={(e)=>dispatch(setTarget(e.target.value))}>
+                {Object.keys(symbols).map(item =>{
+                    const text = `${item} - ${symbols[item].description}`
+                    return item === target ?
+                        <option value={item} selected="selected">{text}</option>
+                        : <option value={item}>{text}</option>
+                })}
             </select>
             <br />
             <input
