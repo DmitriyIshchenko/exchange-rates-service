@@ -1,24 +1,9 @@
-import { createStore } from 'redux';
+import { configureStore } from '@reduxjs/toolkit';
+import exchangerReducer from '../features/exchanger/exchangerSlice';
 
 
-export const mapStateToProps = (state) => {
-  return {
-
+export const store = configureStore({
+  reducer: {
+    exchanger: exchangerReducer
   }
-};
-
-export const mapDispatchToProps = (dispatch) => {
-  return {
-    
-  }
-};
-const defaultState = {};
-const reducer = (state = defaultState, action) => {
-  switch (action.type) {
-
-    default:
-      return state;
-  }
-}
-
-export const store = createStore(reducer);
+});
