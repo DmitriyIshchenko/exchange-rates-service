@@ -1,10 +1,25 @@
-import { createSlice } from "@reduxjs/toolkit";
-
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { fetchTime, fetchSymbols } from "./exhangerAPI";
+require('dotenv').config()
 const initialState = {
     exchangeFrom: "",
     exchangeTo: "",
-    rate: 75
+    rate: 75,
+    base: "RUB",
+    statusSymbols: "idle",
+    symbols: {}
 }
+
+
+export const setBaseAsync = createAsyncThunk();
+
+export const fetchSymbolsAsync = createAsyncThunk(
+    "exchanger/fetchSymbols",
+    async () => {
+        const response =  await fetchSymbols();
+        return response;
+    }
+)
 
 export const exchangerSlice = createSlice({
     name: "exchanger",
@@ -18,6 +33,12 @@ export const exchangerSlice = createSlice({
             state.exchangeFrom = +action.payload / state.rate;
             state.exchangeTo = action.payload;
         }
+    },
+    extraReducers: (builder) => {
+        builder.addCase(fetchSymbolsAsync.fulfilled, (state,action)=>{
+            state.statusSymbols = "succeeded";
+            state.symbols = action.payload;
+        })
     }
 })
 
