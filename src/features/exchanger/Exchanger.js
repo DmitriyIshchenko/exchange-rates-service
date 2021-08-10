@@ -7,7 +7,9 @@ import {
     setExchangeTo,
     fetchSymbolsAsync,
     setBaseAsync,
-    setTarget
+    setTarget,
+    setInput,
+    convertAsync
 } from "./exchangerSlice"
 
 
@@ -17,20 +19,27 @@ export function Exchanger() {
     const exchangeTo = useSelector(selectExchangeTo);
     const symbols = useSelector((state) => state.exchanger.symbols);
     const statusSymbols = useSelector((state) => state.exchanger.statusSymbols);
-    const statusRates = useSelector((state)=>state.exchanger.statusRates);
+    const statusRates = useSelector((state) => state.exchanger.statusRates);
     const base = useSelector((state) => state.exchanger.base);
-    const target = useSelector((state)=>state.exchanger.target);
+    const target = useSelector((state) => state.exchanger.target);
+    const input = useSelector((state) => state.exchanger.input);
     const dispatch = useDispatch();
-
     useEffect(() => {
         if (statusSymbols === "idle") dispatch(fetchSymbolsAsync());
-        if (statusRates==="idle") dispatch(setBaseAsync(base));
+        if (statusRates === "idle") dispatch(setBaseAsync(base));
     })
 
+    function pressEnter(e) {
+        if (e.keyCode === 13) dispatch(convertAsync(input))
+    }
     return (
         <div>
-            <input />
-            <button>Exchange</button>
+            <input
+                placeholder="15 usd in rub"
+                onKeyDown={pressEnter}
+                value={input}
+                onChange={(e) => dispatch(setInput(e.target.value))} />
+            <button onClick={() => dispatch(convertAsync(input))}>Click</button>
             <br />
             <select onChange={(e) => dispatch(setBaseAsync(e.target.value))}>
                 {Object.keys(symbols).map(item => {
@@ -40,8 +49,8 @@ export function Exchanger() {
                         : <option value={item}>{text}</option>
                 })}
             </select>
-            <select onChange={(e)=>dispatch(setTarget(e.target.value))}>
-                {Object.keys(symbols).map(item =>{
+            <select onChange={(e) => dispatch(setTarget(e.target.value))}>
+                {Object.keys(symbols).map(item => {
                     const text = `${item} - ${symbols[item].description}`
                     return item === target ?
                         <option value={item} selected="selected">{text}</option>

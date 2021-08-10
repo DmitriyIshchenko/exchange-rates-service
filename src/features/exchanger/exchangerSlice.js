@@ -1,18 +1,15 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { act } from "react-dom/test-utils";
-import { fetchSymbols, fetchLatestRates } from "./exhangerAPI";
-require('dotenv').config()
+import { fetchSymbols, fetchLatestRates, convert } from "./exhangerAPI";
 const initialState = {
+    input: "",
     exchangeFrom: "",
     exchangeTo: "",
-    rate: 75,
     base: "USD",
     target: "RUB",
     statusSymbols: "idle",
     symbols: {},
     statusRates: "idle",
     rates: {}
-    
 }
 
 
@@ -27,7 +24,19 @@ export const setBaseAsync = createAsyncThunk(
 export const fetchSymbolsAsync = createAsyncThunk(
     "exchanger/fetchSymbols",
     async () => {
-        const response =  await fetchSymbols();
+        const response = await fetchSymbols();
+        return response;
+    }
+)
+
+export const convertAsync = createAsyncThunk(
+    "exchanger/convert",
+    async (str) => {
+        const sentence = str.split(" ");
+        const amount = sentence[0];
+        const from = sentence[1].toUpperCase();
+        const to = sentence[3].toUpperCase();
+        const response = await convert(from, to, amount);
         return response;
     }
 )
@@ -38,26 +47,36 @@ export const exchangerSlice = createSlice({
     reducers: {
         setExchangeFrom: (state, action) => {
             state.exchangeFrom = action.payload;
-            state.exchangeTo = +action.payload * 1;
+            state.exchangeTo = +action.payload * state.rates[state.target];
         },
         setExchangeTo: (state, action) => {
-            
-            state.exchangeFrom = +action.payload / 1;
+            state.exchangeFrom = +action.payload / state.rates[state.target];
             state.exchangeTo = action.payload;
         },
-        setTarget: (state,action)=>{
+        setTarget: (state, action) => {
             state.target = action.payload;
+            state.exchangeTo = state.exchangeFrom * state.rates[state.target];
+        },
+        setInput: (state, action) => {
+            state.input = action.payload;
         }
     },
     extraReducers: (builder) => {
-        builder.addCase(fetchSymbolsAsync.fulfilled, (state,action)=>{
+        builder.addCase(fetchSymbolsAsync.fulfilled, (state, action) => {
             state.statusSymbols = "succeeded";
             state.symbols = action.payload;
         });
-        builder.addCase(setBaseAsync.fulfilled ,(state,action)=>{
+        builder.addCase(setBaseAsync.fulfilled, (state, action) => {
             state.statusRates = "succeeded";
             state.rates = action.payload.rates;
             state.base = action.payload.base;
+            state.exchangeTo = state.exchangeFrom * state.rates[state.target];
+        })
+        builder.addCase(convertAsync.fulfilled, (state, action) => {
+            state.base = action.payload.query.from;
+            state.target = action.payload.query.to;
+            state.exchangeFrom = action.payload.query.amount;
+            state.exchangeTo = action.payload.result;
         })
     }
 })
@@ -65,5 +84,5 @@ export const exchangerSlice = createSlice({
 
 export const selectExchangeFrom = (state) => state.exchanger.exchangeFrom;
 export const selectExchangeTo = (state) => state.exchanger.exchangeTo;
-export const { setExchangeFrom, setExchangeTo, setTarget} = exchangerSlice.actions;
+export const { setExchangeFrom, setExchangeTo, setTarget, setInput } = exchangerSlice.actions;
 export default exchangerSlice.reducer;
