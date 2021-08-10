@@ -1,4 +1,3 @@
-require('dotenv').config();
 
 export function fetchSymbols(){
     return fetch('https://api.exchangerate.host/symbols')
@@ -6,7 +5,6 @@ export function fetchSymbols(){
         return response.json();
     })
     .then((data) => {
-        console.log(data.symbols);
         return data.symbols;
     });
 }
@@ -18,4 +16,10 @@ export function fetchLatestRates(base){
     .then((data) => {
         return data;
     }); 
+}
+
+export function convert(from,to,amount){
+    return fetch(`https://api.exchangerate.host/convert?from=${from}&to=${to}&amount=${amount}`)
+    .then((response)=>response.json())
+    .then(data=>data);
 }
