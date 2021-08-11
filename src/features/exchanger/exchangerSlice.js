@@ -47,15 +47,15 @@ export const exchangerSlice = createSlice({
     reducers: {
         setExchangeFrom: (state, action) => {
             state.exchangeFrom = action.payload;
-            state.exchangeTo = +action.payload * state.rates[state.target];
+            state.exchangeTo = (Math.trunc(+action.payload * state.rates[state.target] * 1000) / 1000) || "";
         },
         setExchangeTo: (state, action) => {
-            state.exchangeFrom = +action.payload / state.rates[state.target];
+            state.exchangeFrom = (Math.trunc(+action.payload / state.rates[state.target] * 1000) / 1000) || "";
             state.exchangeTo = action.payload;
         },
         setTarget: (state, action) => {
             state.target = action.payload;
-            state.exchangeTo = state.exchangeFrom * state.rates[state.target];
+            state.exchangeTo = (Math.trunc(state.exchangeFrom * state.rates[state.target] * 1000) / 1000) || "";
         },
         setInput: (state, action) => {
             state.input = action.payload;
@@ -70,7 +70,7 @@ export const exchangerSlice = createSlice({
             state.statusRates = "succeeded";
             state.rates = action.payload.rates;
             state.base = action.payload.base;
-            state.exchangeTo = state.exchangeFrom * state.rates[state.target];
+            state.exchangeTo = (Math.trunc(state.exchangeFrom * state.rates[state.target] * 1000) / 1000) || "";
         })
         builder.addCase(convertAsync.fulfilled, (state, action) => {
             state.base = action.payload.query.from;
