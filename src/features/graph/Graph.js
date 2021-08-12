@@ -23,7 +23,7 @@ export function Graph() {
     (function () {
         Object.keys(rates).map(item => dataset.push({ date: new Date(item).getTime(), rate: rates[item][target] }))
     })();
-    
+
     const getPastDate = (period) => {
         const targetDate = new Date();
         switch (period) {
@@ -43,14 +43,12 @@ export function Graph() {
     const tickFormatter = (tick) => moment(tick).format("DD MMM YY");
 
     return (
-        <div id="graph-container" width="100%" height="100%">
+        <div id="graph-container" >
             <button className="period-btn" onClick={() => setFrom(getPastDate("year"))}>Year</button>
             <button className="period-btn" onClick={() => setFrom(getPastDate("month"))}>Month</button>
             <button className="period-btn" onClick={() => setFrom(getPastDate("week"))}>Week</button>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer >
                 <LineChart
-                    width={500}
-                    height={200}
                     data={dataset}
                     margin={{
                         top: 5,
