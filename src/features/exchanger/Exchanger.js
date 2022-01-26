@@ -7,6 +7,8 @@ import {
     setTarget
 } from "./exchangerSlice"
 import { Link } from "react-router-dom"
+import Graph from "../graph/Graph"
+
 
 export const useIsMount = () => {
     const isMountRef = useRef(true);
@@ -76,24 +78,27 @@ export function Exchanger() {
     const options = Object.values(symbols).map(item => <option value={item.code} key={item.code}>{`${item.code} - ${item.description}`}</option>);
 
     return (
-        <div id="exchanger-container">
-            <Link to="/rates">show all rates</Link>
+        <>
+            <div id="exchanger-container">
+                <Link to="/rates">show all rates</Link>
 
-            <div className='convert-sentence'>
-                <input type="text" value={sentence} onChange={(e) => setSentence(e.target.value)} />
-                <button onClick={handleConvert}>Convert</button>
+                <div className='convert-sentence'>
+                    <input type="text" value={sentence} onChange={(e) => setSentence(e.target.value)} />
+                    <button onClick={handleConvert}>Convert</button>
+                </div>
+
+                <select name="from" id="from" value={base} onChange={(e) => dispatch(setBase(e.target.value))}>
+                    {options}
+                </select>
+                <input type="text" value={fromAmount} onChange={handleChangeFrom} />
+
+                <select name="to" id="to" value={target} onChange={(e) => dispatch(setTarget(e.target.value))}>
+                    {options}
+                </select>
+                <input type="text" value={toAmount || ""} onChange={handleChangeTo} />
+
             </div>
-
-            <select name="from" id="from" value={base} onChange={(e) => dispatch(setBase(e.target.value))}>
-                {options}
-            </select>
-            <input type="text" value={fromAmount} onChange={handleChangeFrom} />
-
-            <select name="to" id="to" value={target} onChange={(e) => dispatch(setTarget(e.target.value))}>
-                {options}
-            </select>
-            <input type="text" value={toAmount || ""} onChange={handleChangeTo} />
-
-        </div>
+            <Graph base={base} target={target} isMount={isMount} />
+        </>
     )
 }

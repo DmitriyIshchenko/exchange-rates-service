@@ -1,77 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchHistoricalAsync } from './graphSlice';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-const moment = require("moment")
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchHistoricalAsync } from "./graphSlice";
 
-export function Graph() {
+const formatDate = (date) => {
+    return date.toISOString().substring(0, 10);
+}
+const getDateAgo = (period) => {
+    const date = new Date();
+    switch (period) {
+        case "year":
+            date.setFullYear(date.getFullYear() - 1);
+        case "month":
+            date.setMonth(date.getMonth() - 1);
+        case "week":
+            date.setDate(date.getDate() - 7);
+            return formatDate(date);
+    }
+}
+export default function Graph({ base, target, isMount }) {
+
     const dispatch = useDispatch();
-    const base = useSelector((state) => state.exchanger.base);
-    const target = useSelector((state) => state.exchanger.target);
-    const rates = useSelector((state) => state.graph.historical);
 
-    const yearAgo = new Date();
-    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-    const [from, setFrom] = useState(moment(yearAgo).format("YYYY-MM-DD"))
-    const to = moment(new Date()).format("YYYY-MM-DD");
+    const historical = useSelector(state => state.graph.historical);
+    const statusHistorical = useSelector(state => state.graph.statusHistorical);
+
+    const [period, setPeriod] = useState("week");
 
     useEffect(() => {
-        dispatch(fetchHistoricalAsync([from, to, base, target]))
-    }, [from, to, base, target])
-
-    const dataset = [];
-    (function () {
-        Object.keys(rates).map(item => dataset.push({ date: new Date(item).getTime(), rate: rates[item][target] }))
-    })();
-
-    const getPastDate = (period) => {
-        const targetDate = new Date();
-        switch (period) {
-            case "week":
-                targetDate.setDate(targetDate.getDate() - 7);
-                break;
-            case "month":
-                targetDate.setMonth(targetDate.getMonth() - 1);
-                break;
-            case "year":
-                targetDate.setFullYear(targetDate.getFullYear() - 1);
-                break;
+        if (isMount) {
+            if (statusHistorical === "idle") {
+                dispatch(fetchHistoricalAsync({ base, target, startDate: getDateAgo(period), endDate: formatDate(new Date()) }))
+            }
+        } else {
+            dispatch(fetchHistoricalAsync({ base, target, startDate: getDateAgo(period), endDate: formatDate(new Date()) }))
         }
-        return moment(targetDate).format("YYYY-MM-DD");
+    }, [base, target, period])
+
+    const handlePeriodChange = (e) => {
+        setPeriod(e.target.value);
     }
 
-    const tickFormatter = (tick) => moment(tick).format("DD MMM YY");
+    return <div className='graph'>
 
-    return (
-        <div id="graph-container" >
-            <button className="period-btn" onClick={() => setFrom(getPastDate("year"))}>Year</button>
-            <button className="period-btn" onClick={() => setFrom(getPastDate("month"))}>Month</button>
-            <button className="period-btn" onClick={() => setFrom(getPastDate("week"))}>Week</button>
-            <ResponsiveContainer >
-                <LineChart
-                    data={dataset}
-                    margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                    }}
-                >
-                    <YAxis dataKey="rate" domain={['auto', 'auto']} hide={true} />
-                    <XAxis
-                        dataKey="date"
-                        type={"number"}
-                        scale={"time"}
-                        domain={['auto', 'auto']}
-                        tickFormatter={tickFormatter} />
-                    <Tooltip
-                        cursor={false}
-                        labelFormatter={(date) => new Date(date).toDateString()}
-                    />
-                    <Line type="monotone" dataKey="rate" stroke="#82ca9d" dot={false} strokeWidth={3} />
-                </LineChart>
-            </ResponsiveContainer>
-        </div>
-    );
+        <label htmlFor="year">Year
+            <input type="radio" name="period" id="year" value="year" onChange={handlePeriodChange} checked={period === "year"} />
+        </label>
+        <label htmlFor="month">Month
+            <input type="radio" name="period" id="month" value="month" onChange={handlePeriodChange} checked={period === "month"} />
+        </label>
+        <label htmlFor="week">Week
+            <input type="radio" name="period" id="week" value="week" onChange={handlePeriodChange} checked={period === "week"} />
+        </label>
 
+        <p>{base}</p>
+        <p>{target}</p>
+    </div>;
 }
