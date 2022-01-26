@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     fetchSymbolsAsync,
@@ -6,10 +6,20 @@ import {
     setBase,
     setTarget
 } from "./exchangerSlice"
+import { Link } from "react-router-dom"
+
+export const useIsMount = () => {
+    const isMountRef = useRef(true);
+    useEffect(() => {
+        isMountRef.current = false;
+    }, []);
+    return isMountRef.current;
+}
 
 export function Exchanger() {
 
     const dispatch = useDispatch();
+    const isMount = useIsMount();
 
     const [sentence, setSentence] = useState("");
     const [fromAmount, setFromAmount] = useState("");
@@ -19,14 +29,17 @@ export function Exchanger() {
     const rates = useSelector(state => state.exchanger.rates);
     const base = useSelector(state => state.exchanger.base);
     const target = useSelector(state => state.exchanger.target);
+    const statusSymbols = useSelector(state => state.exchanger.statusSymbols);
+    const statusRates = useSelector(state => state.exchanger.statusRates);
 
     useEffect(() => {
-        dispatch(fetchSymbolsAsync())
-    }, [dispatch])
-
-    useEffect(() => {
-        dispatch(fetchRatesAsync(base))
-    }, [base, dispatch])
+        if (isMount) {
+            if (statusSymbols === "idle") dispatch(fetchSymbolsAsync());
+            if (statusRates === "idle") dispatch(fetchRatesAsync(base));
+        } else {
+            dispatch(fetchRatesAsync(base));
+        }
+    }, [base])
 
     useEffect(() => {
         setToAmount(Math.trunc(+fromAmount * rates[target] * 1000) / 1000)
@@ -64,6 +77,8 @@ export function Exchanger() {
 
     return (
         <div id="exchanger-container">
+            <Link to="/rates">show all rates</Link>
+
             <div className='convert-sentence'>
                 <input type="text" value={sentence} onChange={(e) => setSentence(e.target.value)} />
                 <button onClick={handleConvert}>Convert</button>

@@ -1,13 +1,16 @@
 import React from 'react';
 import './App.css';
 import { Exchanger } from "./features/exchanger/Exchanger"
-import { Graph } from "./features/graph/Graph"
+import Rates from "./features/exchanger/Rates"
+import { Routes, Route } from "react-router-dom";
 
 function App() {
   return (
     <div id="app-container">
-      <Exchanger />
-      <Graph />
+      <Routes>
+        <Route path="/" element={<Exchanger />} />
+        <Route path="/rates" element={<Rates />} />
+      </Routes>
     </div>
   )
 }
