@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchHistorical } from "./graphAPI";
 const initialState = {
-    historical: {},
+    historical: [],
     statusHistorical: "idle"
 }
 
@@ -21,7 +21,8 @@ export const graphSlice = createSlice({
     extraReducers: (builder) => {
         builder.addCase(fetchHistoricalAsync.fulfilled, (state, action) => {
             state.statusHistorical = "succeeded";
-            state.historical = action.payload.rates;
+            state.historical = Object.entries(action.payload.rates).map(([date, rate]) =>
+                ({ date: new Date(date).getTime(), rate: Object.values(rate)[0] }))
         })
     }
 })
