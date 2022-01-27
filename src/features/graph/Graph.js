@@ -57,15 +57,40 @@ export default function Graph({ base, target, isMount }) {
                 return d.toLocaleString('default', { month: 'short', day: '2-digit' })
         }
     }
+    const getTicks = (period, historical) => {
+        if (historical.length > 0) {
+            let start = historical[0].date;
+            let end = new Date(historical.at(-1).date);
+            end.setDate(1);
+            end = end.getTime();
+            let ticks = [];
+            switch (period) {
+                case "year":
+                    while (end > start) {
+                        ticks.push(end);
+                        let date = new Date(end);
+                        date.setMonth(date.getMonth() - 1);
+                        end = date.getTime();
+                    }
+                    break;
+                case "month":
+                case "week":
+                    ticks.concat(historical)
+                    break;
+            }
+            return ticks;
+        }
+    }
     const renderLineChart = (
         <LineChart data={historical} width={1000} height={500} style={{ background: "white" }}>
-            <Line type="monotone" dataKey="rate" stroke="#8884d8" isAnimationActive={false} dot={false} />
+            <Line type="monotone" dataKey="rate" stroke="#8884d8" dot={false} />
             <CartesianGrid stroke="#ccc" vertical={false} />
             <XAxis dataKey="date"
                 type="number"
                 scale="time"
                 domain={["auto", "auto"]}
-                tickFormatter={tickFormatter}
+                ticks={getTicks(period, historical)}
+                tickFormatter={tick => tickFormatter(tick)}
             />
             <YAxis domain={["auto", "auto"]} />
             <Tooltip
