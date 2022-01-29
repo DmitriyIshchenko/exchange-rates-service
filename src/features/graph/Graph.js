@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchHistoricalAsync } from "./graphSlice";
+import { fetchHistoricalAsync, setPeriod } from "./graphSlice";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const formatDate = (date) => {
+import "../../styles/Graph.css"
+
+export const formatDate = (date) => {
     return date.toISOString().substring(0, 10);
 }
-const getDateAgo = (period) => {
+export const getDateAgo = (period) => {
     const date = new Date();
     switch (period) {
         case "year":
@@ -19,6 +21,8 @@ const getDateAgo = (period) => {
         case "week":
             date.setDate(date.getDate() - 6);
             break;
+        default:
+            break;
     }
     return formatDate(date);
 }
@@ -29,8 +33,7 @@ export default function Graph({ base, target, isMount }) {
 
     const historical = useSelector(state => state.graph.historical);
     const statusHistorical = useSelector(state => state.graph.statusHistorical);
-
-    const [period, setPeriod] = useState("year");
+    const period = useSelector(state => state.graph.period);
 
     useEffect(() => {
         if (isMount) {
@@ -43,18 +46,20 @@ export default function Graph({ base, target, isMount }) {
     }, [base, target, period])
 
     const handlePeriodChange = (e) => {
-        setPeriod(e.target.value);
+        dispatch(setPeriod(e.target.value));
     }
 
-    const tickFormatter = (tick) => {
+    const tickFormatter = (tick, period) => {
         const d = new Date(tick);
         switch (period) {
             case "year":
-                return d.toLocaleString('default', { month: 'short' })
+                return d.toLocaleString('en-US', { month: 'short' })
             case "month":
-                return d.toLocaleString('default', { day: '2-digit' })
+                return d.toLocaleString('en-US', { day: '2-digit' })
             case "week":
-                return d.toLocaleString('default', { month: 'short', day: '2-digit' })
+                return d.toLocaleString('en-US', { month: 'short', day: '2-digit' })
+            default:
+                break;
         }
     }
     const getTicks = (period, historical) => {
@@ -73,8 +78,7 @@ export default function Graph({ base, target, isMount }) {
                         end = date.getTime();
                     }
                     break;
-                case "month":
-                case "week":
+                default:
                     ticks.concat(historical)
                     break;
             }
@@ -82,15 +86,15 @@ export default function Graph({ base, target, isMount }) {
         }
     }
     const renderLineChart = (
-        <LineChart data={historical} width={1000} height={500} style={{ background: "white" }}>
-            <Line type="monotone" dataKey="rate" stroke="#8884d8" dot={false} />
+        <LineChart data={historical} width={1000} height={500} margin={{ top: 0, left: 0, right: 0, bottom: 0 }}>
+            <Line type="monotone" dataKey="rate" stroke="#4D99E5" strokeWidth={2} dot={false} isAnimationActive={false} />
             <CartesianGrid stroke="#ccc" vertical={false} />
             <XAxis dataKey="date"
                 type="number"
                 scale="time"
                 domain={["auto", "auto"]}
                 ticks={getTicks(period, historical)}
-                tickFormatter={tick => tickFormatter(tick)}
+                tickFormatter={tick => tickFormatter(tick, period)}
             />
             <YAxis domain={["auto", "auto"]} />
             <Tooltip
@@ -100,16 +104,20 @@ export default function Graph({ base, target, isMount }) {
     );
     return <div className='graph-container'>
         <div className='period-controls'>
-            <label htmlFor="year">Year
+            <label htmlFor="year" className={period === "year" ? "radio-selected" : ""}>Year
                 <input type="radio" name="period" id="year" value="year" onChange={handlePeriodChange} checked={period === "year"} />
             </label>
-            <label htmlFor="month">Month
+            <label htmlFor="month" className={period === "month" ? "radio-selected" : ""}>Month
                 <input type="radio" name="period" id="month" value="month" onChange={handlePeriodChange} checked={period === "month"} />
             </label>
-            <label htmlFor="week">Week
+            <label htmlFor="week" className={period === "week" ? "radio-selected" : ""}>Week
                 <input type="radio" name="period" id="week" value="week" onChange={handlePeriodChange} checked={period === "week"} />
             </label>
         </div>
-        {renderLineChart}
+        <div className='graph'>
+            <ResponsiveContainer >
+                {renderLineChart}
+            </ResponsiveContainer>
+        </div>
     </div>
 }

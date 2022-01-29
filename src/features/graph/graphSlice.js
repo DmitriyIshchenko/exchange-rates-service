@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchHistorical } from "./graphAPI";
 const initialState = {
     historical: [],
+    period: "month",
     statusHistorical: "idle"
 }
 
@@ -17,6 +18,9 @@ export const graphSlice = createSlice({
     name: "graph",
     initialState,
     reducers: {
+        setPeriod: (state, action) => {
+            state.period = action.payload;
+        }
     },
     extraReducers: (builder) => {
         builder.addCase(fetchHistoricalAsync.fulfilled, (state, action) => {
@@ -26,5 +30,5 @@ export const graphSlice = createSlice({
         })
     }
 })
-
+export const { setPeriod } = graphSlice.actions;
 export default graphSlice.reducer;
