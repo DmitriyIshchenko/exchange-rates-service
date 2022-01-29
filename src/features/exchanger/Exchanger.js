@@ -11,7 +11,7 @@ import { FaExchangeAlt } from "react-icons/fa"
 
 import "../../styles/Exchanger.css"
 
-export const useIsMount = () => {
+export const useIsMount = () => { //prevent multiple identical requests 
     const isMountRef = useRef(true);
     useEffect(() => {
         isMountRef.current = false;
@@ -25,6 +25,7 @@ export function Exchanger() {
     const isMount = useIsMount();
 
     const [sentence, setSentence] = useState("");
+    const [amountFromSentence, setAmountFromSentence] = useState("")
     const [fromAmount, setFromAmount] = useState("");
     const [toAmount, setToAmount] = useState("");
 
@@ -45,8 +46,8 @@ export function Exchanger() {
     }, [base])
 
     useEffect(() => {
-        setToAmount(Math.trunc(+fromAmount * rates[target] * 1000) / 1000)
-    }, [target, rates])
+        setToAmount(Math.trunc(fromAmount * rates[target] * 1000) / 1000)
+    }, [target, rates, amountFromSentence]) // if fromAmount is passed here, you can't edit to-input
 
     const handleConvert = () => {
         const data = sentence.split(" "); //15 usd in rub
@@ -59,27 +60,37 @@ export function Exchanger() {
         if (amount && from && to) {
             from = from.toUpperCase();
             to = to.toUpperCase();
-            if (!isNaN(+amount) && symbols.hasOwnProperty(from) && symbols.hasOwnProperty(to)) {
+            if (!isNaN(+amount) && +amount > 0 && symbols.hasOwnProperty(from) && symbols.hasOwnProperty(to)) {
                 dispatch(setBase(from));
                 dispatch(setTarget(to));
                 setFromAmount(+amount);
+                setAmountFromSentence(+amount);
+                setSentence("")
             }
         } else return;
     }
 
     const handleChangeFrom = (e) => {
-        setFromAmount(e.target.value);
-        setToAmount(Math.trunc(e.target.value * rates[target] * 1000) / 1000)
+        if (+e.target.value >= 0) { //prevent negative values
+            setFromAmount(e.target.value);
+            setToAmount(Math.trunc(e.target.value * rates[target] * 1000) / 1000)
+        }
     }
     const handleChangeTo = (e) => {
-        setToAmount(e.target.value);
-        setFromAmount(Math.trunc(e.target.value / rates[target] * 1000) / 1000)
+        if (e.target.value >= 0) {
+            setToAmount(e.target.value);
+            setFromAmount(Math.trunc(e.target.value / rates[target] * 1000) / 1000)
+        }
     }
     const handleReverse = () => {
         const tempBase = base;
         const tempTarget = target;
         dispatch(setBase(tempTarget));
         dispatch(setTarget(tempBase));
+    }
+
+    const handleKeyDown = e => {
+        if (e.code === "Enter") handleConvert();
     }
 
     const options = Object.values(symbols).map(item => <option value={item.code} key={item.code}>{`${item.code} - ${item.description}`}</option>);
@@ -93,7 +104,8 @@ export function Exchanger() {
                     type="text"
                     placeholder='15 usd in rub'
                     value={sentence}
-                    onChange={(e) => setSentence(e.target.value)} />
+                    onChange={(e) => setSentence(e.target.value)}
+                    onKeyDown={handleKeyDown} />
                 <button className='btn-convert' onClick={handleConvert}>Convert</button>
             </div>
             <div className='exchanger'>
@@ -101,7 +113,7 @@ export function Exchanger() {
                     <select className="select-from-to" name="from" id="from" value={base} onChange={(e) => dispatch(setBase(e.target.value))}>
                         {options}
                     </select>
-                    <input className="input-from-to" type="text" value={fromAmount} onChange={handleChangeFrom} placeholder='0' />
+                    <input className="input-from-to" type="text" value={fromAmount || ""} onChange={handleChangeFrom} placeholder='0' />
                 </div>
                 <button className='btn-reverse' onClick={handleReverse}><FaExchangeAlt /></button>
                 <div className='from-to-container'>
