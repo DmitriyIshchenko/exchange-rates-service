@@ -6,9 +6,10 @@ import {
     setBase,
     setTarget
 } from "./exchangerSlice"
-import { Link } from "react-router-dom"
 import Graph from "../graph/Graph"
+import { FaExchangeAlt } from "react-icons/fa"
 
+import "../../styles/Exchanger.css"
 
 export const useIsMount = () => {
     const isMountRef = useRef(true);
@@ -74,31 +75,44 @@ export function Exchanger() {
         setToAmount(e.target.value);
         setFromAmount(Math.trunc(e.target.value / rates[target] * 1000) / 1000)
     }
+    const handleReverse = () => {
+        const tempBase = base;
+        const tempTarget = target;
+        dispatch(setBase(tempTarget));
+        dispatch(setTarget(tempBase));
+    }
 
     const options = Object.values(symbols).map(item => <option value={item.code} key={item.code}>{`${item.code} - ${item.description}`}</option>);
 
     return (
-        <>
-            <div id="exchanger-container">
-                <Link to="/rates">show all rates</Link>
+        <div className='exchanger-container'>
 
-                <div className='convert-sentence'>
-                    <input type="text" value={sentence} onChange={(e) => setSentence(e.target.value)} />
-                    <button onClick={handleConvert}>Convert</button>
-                </div>
-
-                <select name="from" id="from" value={base} onChange={(e) => dispatch(setBase(e.target.value))}>
-                    {options}
-                </select>
-                <input type="text" value={fromAmount} onChange={handleChangeFrom} />
-
-                <select name="to" id="to" value={target} onChange={(e) => dispatch(setTarget(e.target.value))}>
-                    {options}
-                </select>
-                <input type="text" value={toAmount || ""} onChange={handleChangeTo} />
-
+            <div className='convert-sentence'>
+                <input
+                    className="input-convert"
+                    type="text"
+                    placeholder='15 usd in rub'
+                    value={sentence}
+                    onChange={(e) => setSentence(e.target.value)} />
+                <button className='btn-convert' onClick={handleConvert}>Convert</button>
             </div>
+            <div className='exchanger'>
+                <div className='from-to-container'>
+                    <select className="select-from-to" name="from" id="from" value={base} onChange={(e) => dispatch(setBase(e.target.value))}>
+                        {options}
+                    </select>
+                    <input className="input-from-to" type="text" value={fromAmount} onChange={handleChangeFrom} placeholder='0' />
+                </div>
+                <button className='btn-reverse' onClick={handleReverse}><FaExchangeAlt /></button>
+                <div className='from-to-container'>
+                    <select className="select-from-to" name="to" id="to" value={target} onChange={(e) => dispatch(setTarget(e.target.value))}>
+                        {options}
+                    </select>
+                    <input className="input-from-to" type="text" value={toAmount || ""} onChange={handleChangeTo} placeholder='0' />
+                </div>
+            </div>
+
             <Graph base={base} target={target} isMount={isMount} />
-        </>
+        </div>
     )
 }

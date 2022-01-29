@@ -1,0 +1,99 @@
+.exchanger-container {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.exchanger {
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.convert-sentence {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.input-convert, .btn-convert {
+    font-size: 1rem;
+    height: 2rem;
+    border-radius: 5px;
+    border: 1px solid var(--mainGrey);
+}
+
+.input-convert {
+    flex: 2;
+    min-width: 100px;
+    padding: 10px;
+    outline: none;
+}
+
+.btn-convert {
+    background-color: var(--primaryColor);
+    border: none;
+    color: white;
+    margin-left: 10px;
+    flex: 1;
+}
+
+.select-from-to, .input-from-to {
+    height: 100px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-size: 3rem;
+    outline: none;
+    color: #616368;
+    font-weight: 200;
+}
+
+.select-from-to {
+    height: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: black;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 15px 20px -20px;
+}
+
+.btn-reverse {
+    display: none;
+}
+
+.graph-container {
+    flex: 1;
+}
+
+@media screen and (min-width: 768px) {
+    .exchanger {
+        display: flex;
+        flex-direction: row;
+        margin-top: 20px;
+    }
+
+    .convert-sentence {
+        width: 50%;
+        margin: auto;
+    }
+
+    .from-to-container {
+        flex: 2;
+    }
+
+    .btn-reverse {
+        display: block;
+        background: var(--primaryColor);
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        margin: 0 20px 0 20px;
+        transition: box-shadow 0.3s;
+    }
+
+    .btn-reverse:hover {
+        box-shadow: 0px 0px 0px 10px rgba(6, 79, 138, 0.3);
+    }
+}

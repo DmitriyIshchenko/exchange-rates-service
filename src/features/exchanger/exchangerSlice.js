@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchSymbols, fetchLatestRates, convert } from "./exhangerAPI";
+import { fetchSymbols, fetchLatestRates } from "./exhangerAPI";
 const initialState = {
     base: "USD",
-    target: "USD",
+    target: "EUR",
     statusSymbols: "idle",
     symbols: {},
     statusRates: "idle",
