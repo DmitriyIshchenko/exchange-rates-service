@@ -3,10 +3,12 @@ import './App.css';
 import { Exchanger } from "./features/exchanger/Exchanger"
 import Rates from "./features/exchanger/Rates"
 import { Routes, Route } from "react-router-dom";
+import Navbar from './features/exchanger/Navbar';
 
 function App() {
   return (
-    <div id="app-container">
+    <div className='App'>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Exchanger />} />
         <Route path="/rates" element={<Rates />} />
